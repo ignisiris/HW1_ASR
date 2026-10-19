@@ -1,0 +1,18 @@
+train: []
+inference:
+  - _target_: src.metrics.ArgmaxCERMetric
+    name: "CER_(Argmax)"
+  - _target_: src.metrics.ArgmaxWERMetric
+    name: "WER_(Argmax)"
+  - _target_: src.metrics.decoded_metric.BeamMetric
+    name: "CER_(Beam)"
+    beam_size: 16
+    metric_fn:
+      _target_: src.metrics.utils.calc_cer
+      _partial_: true
+  - _target_: src.metrics.decoded_metric.BeamMetric
+    name: "WER_(Beam)"
+    beam_size: 16
+    metric_fn:
+      _target_: src.metrics.utils.calc_wer
+      _partial_: true
