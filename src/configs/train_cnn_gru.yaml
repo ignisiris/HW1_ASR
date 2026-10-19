@@ -1,0 +1,60 @@
+defaults:
+  - model: cnn_gru
+  - writer: cometml
+  - metrics: example
+  - dataloader: example
+  - transforms: example_only_instance
+  - _self_
+
+datasets:
+  train:
+    _target_: src.datasets.LibrispeechDataset
+    part: train-clean-100
+    instance_transforms: ${transforms.instance_transforms.train}
+  val:
+    _target_: src.datasets.LibrispeechDataset
+    part: dev-clean
+    instance_transforms: ${transforms.instance_transforms.inference}
+
+dataloader:
+  batch_size: 16
+  num_workers: 8
+  pin_memory: true
+
+optimizer:
+  _target_: torch.optim.AdamW
+  lr: 0.0003
+  weight_decay: 0.0001
+
+lr_scheduler:
+  _target_: torch.optim.lr_scheduler.OneCycleLR
+  max_lr: 0.0003
+  pct_start: 0.05
+  steps_per_epoch: ${trainer.epoch_len}
+  epochs: ${trainer.n_epochs}
+  anneal_strategy: cos
+
+loss_function:
+  _target_: src.loss.CTCLossWrapper
+
+text_encoder:
+  _target_: src.text_encoder.CTCTextEncoder
+
+writer:
+  project_name: hw1_asr
+  run_name: cnn_gru_logmel128
+
+trainer:
+  log_step: 50
+  n_epochs: 50
+  epoch_len: 1000
+  device_tensors: [spectrogram, text_encoded]
+  device: auto
+  max_grad_norm: 1.0
+  resume_from: null
+  override: false
+  monitor: "min val_WER_(Argmax)"
+  save_period: 1
+  early_stop: 10
+  save_dir: saved
+  seed: 42
