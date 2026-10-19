@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+  - exp_3_speed
+  - _self_
+
+writer:
+  run_name: exp_12_speed_gru384
+
+model:
+  rnn_hidden: 384

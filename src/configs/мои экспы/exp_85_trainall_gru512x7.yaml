@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+  - exp_78_trainall_gru512x7
+  - _self_
+
+writer:
+  run_name: exp_85_trainall_gru512x7
+
+trainer:
+  seed: 43

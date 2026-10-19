@@ -1,0 +1,39 @@
+# @package _global_
+defaults:
+  - exp_3_speed
+  - _self_
+
+writer:
+  run_name: exp_46_night_gru512x7
+
+model:
+  rnn_hidden: 512
+  rnn_layers: 7
+  fc_hidden: 512
+  dropout: 0.2
+
+optimizer:
+  lr: 0.0006
+  weight_decay: 0.0001
+
+lr_scheduler:
+  max_lr: 0.0006
+  pct_start: 0.05
+
+trainer:
+  n_epochs: 80
+  seed: 42
+
+train_transforms:
+  spectrogram:
+    _target_: torch.nn.Sequential
+    _args_:
+      - _target_: src.transforms.spec_augs.frequency_masking.FrequencyMasking
+        max_width: 6
+        num_masks: 1
+        p: 1.0
+      - _target_: src.transforms.spec_augs.time_masking.TimeMasking
+        max_ratio: 0.03
+        max_width: 30
+        num_masks: 1
+        p: 1.0

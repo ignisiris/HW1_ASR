@@ -1,0 +1,15 @@
+# @package _global_
+defaults:
+  - exp_25_night_gru512x7
+  - _self_
+
+writer:
+  run_name: exp_78_trainall_gru512x7
+
+datasets:
+  train:
+    part: train_all
+  val_other:
+    _target_: src.datasets.LibrispeechDataset
+    part: dev-other
+    instance_transforms: ${transforms.instance_transforms.inference}

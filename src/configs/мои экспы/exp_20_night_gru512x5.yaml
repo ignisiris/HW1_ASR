@@ -1,0 +1,25 @@
+# @package _global_
+defaults:
+  - exp_3_speed
+  - _self_
+
+writer:
+  run_name: exp_20_night_gru512x5
+
+model:
+  rnn_hidden: 512
+  rnn_layers: 5
+  fc_hidden: 512
+  dropout: 0.2
+
+optimizer:
+  lr: 0.0006
+  weight_decay: 0.0001
+
+lr_scheduler:
+  max_lr: 0.0006
+  pct_start: 0.05
+
+trainer:
+  n_epochs: 50
+  seed: 42

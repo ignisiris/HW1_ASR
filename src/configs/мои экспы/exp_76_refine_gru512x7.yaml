@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+  - exp_25_night_gru512x7
+  - _self_
+
+writer:
+  run_name: exp_76_refine_gru512x7
+
+optimizer:
+  weight_decay: 0.0003

@@ -1,0 +1,13 @@
+# @package _global_
+defaults:
+  - exp_3_speed
+  - _self_
+
+writer:
+  run_name: exp_10_speed_lr_6e4
+
+optimizer:
+  lr: 0.0006
+
+lr_scheduler:
+  max_lr: 0.0006

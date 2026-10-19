@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+  - exp_78_trainall_gru512x7
+  - _self_
+
+writer:
+  run_name: exp_82_trainall_gru512x7
+
+model:
+  dropout: 0.3

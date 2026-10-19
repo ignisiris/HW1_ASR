@@ -1,0 +1,16 @@
+# @package _global_
+defaults:
+  - exp_25_night_gru512x7
+  - _self_
+
+writer:
+  run_name: exp_75_refine_gru512x7
+
+optimizer:
+  lr: 0.00025
+
+lr_scheduler:
+  max_lr: 0.00025
+
+trainer:
+  seed: 42

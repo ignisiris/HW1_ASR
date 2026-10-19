@@ -1,0 +1,141 @@
+# @package _global_
+model:
+  _target_: src.model.cnn_gru.CNNGRUCTC
+  n_feats: 128
+  fc_hidden: 512
+  rnn_hidden: 512
+  rnn_layers: 7
+  dropout: 0.2
+writer:
+  _target_: src.logger.CometMLWriter
+  project_name: hw1_asr
+  workspace: null
+  run_name: exp_106_continue_seed43
+  mode: offline
+  loss_names:
+  - loss
+  log_checkpoints: false
+  id_length: 32
+metrics:
+  train: []
+  inference:
+  - _target_: src.metrics.ArgmaxCERMetric
+    name: CER_(Argmax)
+  - _target_: src.metrics.ArgmaxWERMetric
+    name: WER_(Argmax)
+dataloader:
+  _target_: torch.utils.data.DataLoader
+  batch_size: 16
+  num_workers: 2
+  pin_memory: true
+transforms:
+  instance_transforms:
+    train:
+      get_spectrogram:
+        _target_: src.transforms.log_mel.LogMel
+        sample_rate: 16000
+        n_mels: 128
+        n_fft: 1024
+        win_length: 400
+        hop_length: 160
+      audio:
+        _target_: torchvision.transforms.v2.Compose
+        transforms:
+        - _target_: src.transforms.wav_augs.Gain
+    inference:
+      get_spectrogram:
+        _target_: src.transforms.log_mel.LogMel
+        sample_rate: 16000
+        n_mels: 128
+        n_fft: 1024
+        win_length: 400
+        hop_length: 160
+  batch_transforms:
+    train: null
+    inference: null
+datasets:
+  train:
+    _target_: src.datasets.LibrispeechDataset
+    part: train_all
+    instance_transforms:
+      get_spectrogram:
+        _target_: src.transforms.log_mel.LogMel
+        sample_rate: 16000
+        n_mels: 128
+        n_fft: 1024
+        win_length: 400
+        hop_length: 160
+      audio:
+        _target_: src.transforms.wav_augs.speed.SpeedPerturbation
+        sample_rate: 16000
+        factors:
+        - 0.9
+        - 1.0
+        - 1.1
+  val:
+    _target_: src.datasets.LibrispeechDataset
+    part: dev-clean
+    instance_transforms:
+      get_spectrogram:
+        _target_: src.transforms.log_mel.LogMel
+        sample_rate: 16000
+        n_mels: 128
+        n_fft: 1024
+        win_length: 400
+        hop_length: 160
+  val_other:
+    _target_: src.datasets.LibrispeechDataset
+    part: dev-other
+    instance_transforms:
+      get_spectrogram:
+        _target_: src.transforms.log_mel.LogMel
+        sample_rate: 16000
+        n_mels: 128
+        n_fft: 1024
+        win_length: 400
+        hop_length: 160
+optimizer:
+  _target_: torch.optim.AdamW
+  lr: 3.0e-05
+  weight_decay: 0.0001
+lr_scheduler:
+  _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+  T_max: 20000
+  eta_min: 1.0e-06
+loss_function:
+  _target_: src.loss.CTCLossWrapper
+text_encoder:
+  _target_: src.text_encoder.CTCTextEncoder
+trainer:
+  log_step: 50
+  n_epochs: 20
+  epoch_len: 1000
+  device_tensors:
+  - spectrogram
+  - text_encoded
+  device: cuda
+  max_grad_norm: 1.0
+  resume_from: null
+  override: false
+  monitor: min val_WER_(Argmax)
+  save_period: 5
+  early_stop: 0
+  save_dir: saved
+  seed: 43
+  skip_oom: false
+  from_pretrained: saved/exp79/model_best.pth
+train_transforms:
+  get_spectrogram:
+    _target_: src.transforms.log_mel.LogMel
+    sample_rate: 16000
+    n_mels: 128
+    n_fft: 1024
+    win_length: 400
+    hop_length: 160
+  audio:
+    _target_: src.transforms.wav_augs.speed.SpeedPerturbation
+    sample_rate: 16000
+    factors:
+    - 0.9
+    - 1.0
+    - 1.1

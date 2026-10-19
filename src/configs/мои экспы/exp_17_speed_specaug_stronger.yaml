@@ -1,0 +1,21 @@
+# @package _global_
+defaults:
+  - exp_3_speed
+  - _self_
+
+writer:
+  run_name: exp_17_speed_specaug_stronger
+
+train_transforms:
+  spectrogram:
+    _target_: torch.nn.Sequential
+    _args_:
+      - _target_: src.transforms.spec_augs.frequency_masking.FrequencyMasking
+        max_width: 18
+        num_masks: 2
+        p: 1.0
+      - _target_: src.transforms.spec_augs.time_masking.TimeMasking
+        max_ratio: 0.075
+        max_width: 60
+        num_masks: 2
+        p: 1.0

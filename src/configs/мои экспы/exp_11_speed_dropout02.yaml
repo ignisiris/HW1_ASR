@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+  - exp_3_speed
+  - _self_
+
+writer:
+  run_name: exp_11_speed_dropout02
+
+model:
+  dropout: 0.2

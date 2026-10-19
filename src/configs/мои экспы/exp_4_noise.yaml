@@ -1,0 +1,19 @@
+# @package _global_
+defaults:
+  - exp_2_cnn_gru
+  - _self_
+
+datasets:
+  train:
+    instance_transforms: ${train_transforms}
+
+train_transforms:
+  get_spectrogram: ${transforms.instance_transforms.inference.get_spectrogram}
+  audio:
+    _target_: src.transforms.wav_augs.noise.AddNoise
+    min_snr_db: 15.0
+    max_snr_db: 30.0
+    p: 0.5
+
+writer:
+  run_name: exp_4_noise

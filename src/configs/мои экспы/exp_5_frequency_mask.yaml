@@ -1,0 +1,19 @@
+# @package _global_
+defaults:
+  - exp_2_cnn_gru
+  - _self_
+
+datasets:
+  train:
+    instance_transforms: ${train_transforms}
+
+train_transforms:
+  get_spectrogram: ${transforms.instance_transforms.inference.get_spectrogram}
+  spectrogram:
+    _target_: src.transforms.spec_augs.frequency_masking.FrequencyMasking
+    max_width: 12
+    num_masks: 2
+    p: 1.0
+
+writer:
+  run_name: exp_5_frequency_mask

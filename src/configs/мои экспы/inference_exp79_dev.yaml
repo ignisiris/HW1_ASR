@@ -1,0 +1,11 @@
+# @package _global_
+defaults:
+  - inference_exp77_dev
+  - _self_
+
+model:
+  dropout: 0.2
+
+inferencer:
+  from_pretrained: saved/exp_79_trainall_gru512x7_h100_20261017_222502/model_best.pth
+  save_path: train_all_evaluation/exp_79_trainall_gru512x7/predictions

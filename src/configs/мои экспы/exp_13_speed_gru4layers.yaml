@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+  - exp_3_speed
+  - _self_
+
+writer:
+  run_name: exp_13_speed_gru4layers
+
+model:
+  rnn_layers: 4

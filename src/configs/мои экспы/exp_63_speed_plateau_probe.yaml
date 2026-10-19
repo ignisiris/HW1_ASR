@@ -1,0 +1,18 @@
+# @package _global_
+defaults:
+  - exp_3_speed
+  - _self_
+
+writer:
+  run_name: exp_63_speed_plateau_probe
+
+optimizer:
+  lr: 0.0001
+
+lr_scheduler:
+  max_lr: 0.0001
+  pct_start: 0.1
+
+trainer:
+  n_epochs: 15
+  from_pretrained: saved/frozen_parents/exp_3_speed.pth
