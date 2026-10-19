@@ -60,6 +60,10 @@ class Trainer(BaseTrainer):
         for met in metric_funcs:
             metrics.update(met.name, met(**batch))
         return batch
+    def log_audio(self, audio, audio_length, sample_rate=16000, **batch):
+        length = int(audio_length[0])
+        audio_for_log = audio[0, :, :length].detach().cpu()
+        self.writer.add_audio("audio", audio_for_log, sample_rate=sample_rate)
 
     def _log_batch(self, batch_idx, batch, mode="train"):
         """
@@ -83,6 +87,7 @@ class Trainer(BaseTrainer):
             # Log Stuff
             self.log_spectrogram(**batch)
             self.log_predictions(**batch)
+        self.log_audio(**batch)
 
     def log_spectrogram(self, spectrogram, **batch):
         spectrogram_for_plot = spectrogram[0].detach().cpu()
