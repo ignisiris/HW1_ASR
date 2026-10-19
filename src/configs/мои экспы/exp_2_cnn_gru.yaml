@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+  - /train_cnn_gru
+  - _self_
+
+writer:
+  run_name: exp_2_cnn_gru
+
+trainer:
+  resume_from: null
