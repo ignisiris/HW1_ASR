@@ -1,7 +1,11 @@
+from pathlib import Path
+
 import torch
 from tqdm.auto import tqdm
 
 from src.metrics.tracker import MetricTracker
+from src.text_encoder.ctc_beam_lm import CTCBeamSearchLM
+from src.text_encoder.ctc_beam_search import CTCPrefixBeamSearch
 from src.trainer.base_trainer import BaseTrainer
 
 
@@ -193,3 +197,80 @@ class Inferencer(BaseTrainer):
                 )
 
         return self.evaluation_metrics.result()
+
+
+class ASRInferencer(Inferencer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.decoder_name = self.cfg_trainer.get("decoder", "greedy")
+        if self.decoder_name not in ("greedy", "beam", "beam_lm"):
+            raise ValueError("Unknown decoder: " + self.decoder_name + " .... but, in general, there’s no need to box yourself in")
+        self.beam = None
+        if self.decoder_name == "beam":
+            self.beam = CTCPrefixBeamSearch(
+                self.text_encoder, beam_size=self.cfg_trainer.get("beam_size", 16)
+            )
+        elif self.decoder_name == "beam_lm":  # тот же beam с пересчётом кандидатов по LM
+            self.beam = CTCBeamSearchLM(
+                self.text_encoder,
+                lm_path=self.cfg_trainer.lm_path,  # файл обученной LM из конфига
+                beam_size=self.cfg_trainer.get("beam_size", 32),
+                lm_alpha=self.cfg_trainer.get("lm_alpha", 1.0),
+                word_bonus=self.cfg_trainer.get("word_bonus", 1.0),
+            )
+        if self.save_path is not None:
+            self.save_path = Path(self.save_path)
+
+    @torch.no_grad()
+    def process_batch(self, batch_idx, batch, metrics, part):
+        batch = self.move_batch_to_device(dict(batch))
+        if self.batch_transforms is not None:
+            batch = self.transform_batch(batch)
+        batch.update(self.model(**batch))
+
+        if self.decoder_name in ("beam", "beam_lm"):
+            predictions = self.beam.decode_batch(batch["log_probs"], batch["log_probs_length"])
+        else:
+            indices = batch["log_probs"].argmax(-1).cpu()
+            predictions = [
+                self.text_encoder.ctc_decode(row[:int(length)])
+                for row, length in zip(indices, batch["log_probs_length"])
+            ]
+        batch["predictions"] = predictions
+
+        for audio_path, prediction in zip(batch["audio_path"], predictions):
+            identifier = Path(audio_path).stem
+            self._seen_ids.add(identifier)
+            if self.save_path is not None:
+                output = self.save_path / part / (identifier + ".txt")
+                output.write_text(prediction + "\n", encoding="utf-8")
+
+        labeled = [index for index, text in enumerate(batch["text"]) if text is not None]
+        self._labeled_count += len(labeled)
+        if metrics is not None and labeled:
+            for metric in self.metrics["inference"]:
+                value = metric(
+                    log_probs=batch["log_probs"][labeled],
+                    log_probs_length=batch["log_probs_length"][labeled],
+                    text=[batch["text"][index] for index in labeled],
+                )
+                metrics.update(metric.name, value, n=len(labeled))
+        return batch
+
+    def _inference_part(self, part, dataloader):
+        self.is_train = False
+        self.model.eval()
+        self._seen_ids = set()
+        self._labeled_count = 0
+        if self.evaluation_metrics is not None:
+            self.evaluation_metrics.reset()
+        if self.save_path is not None:
+            (self.save_path / part).mkdir(exist_ok=True, parents=True)
+
+        for batch_idx, batch in tqdm(enumerate(dataloader), desc=part, total=len(dataloader)):
+            self.process_batch(batch_idx, batch, self.evaluation_metrics, part)
+
+        logs = {"predictions": len(self._seen_ids), "labeled": self._labeled_count}
+        if self.evaluation_metrics is not None and self._labeled_count:
+            logs.update(self.evaluation_metrics.result())
+        return logs
