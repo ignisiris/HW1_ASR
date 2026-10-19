@@ -1,0 +1,7 @@
+
+_target_: src.model.cnn_gru.CNNGRUCTC
+n_feats: 128
+fc_hidden: 512
+rnn_hidden: 256
+rnn_layers: 3
+dropout: 0.1
