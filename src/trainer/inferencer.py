@@ -204,13 +204,19 @@ class ASRInferencer(Inferencer):
         super().__init__(*args, **kwargs)
         self.decoder_name = self.cfg_trainer.get("decoder", "greedy")
         if self.decoder_name not in ("greedy", "beam", "beam_lm"):
-            raise ValueError("Unknown decoder: " + self.decoder_name + " .... but, in general, there’s no need to box yourself in")
+            raise ValueError(
+                "Unknown decoder: "
+                + self.decoder_name
+                + " .... but, in general, there’s no need to box yourself in"
+            )
         self.beam = None
         if self.decoder_name == "beam":
             self.beam = CTCPrefixBeamSearch(
                 self.text_encoder, beam_size=self.cfg_trainer.get("beam_size", 16)
             )
-        elif self.decoder_name == "beam_lm":  # тот же beam с пересчётом кандидатов по LM
+        elif (
+            self.decoder_name == "beam_lm"
+        ):  # тот же beam с пересчётом кандидатов по LM
             self.beam = CTCBeamSearchLM(
                 self.text_encoder,
                 lm_path=self.cfg_trainer.lm_path,  # файл обученной LM из конфига
@@ -229,11 +235,13 @@ class ASRInferencer(Inferencer):
         batch.update(self.model(**batch))
 
         if self.decoder_name in ("beam", "beam_lm"):
-            predictions = self.beam.decode_batch(batch["log_probs"], batch["log_probs_length"])
+            predictions = self.beam.decode_batch(
+                batch["log_probs"], batch["log_probs_length"]
+            )
         else:
             indices = batch["log_probs"].argmax(-1).cpu()
             predictions = [
-                self.text_encoder.ctc_decode(row[:int(length)])
+                self.text_encoder.ctc_decode(row[: int(length)])
                 for row, length in zip(indices, batch["log_probs_length"])
             ]
         batch["predictions"] = predictions
@@ -245,16 +253,18 @@ class ASRInferencer(Inferencer):
                 output = self.save_path / part / (identifier + ".txt")
                 output.write_text(prediction + "\n", encoding="utf-8")
 
-        labeled = [index for index, text in enumerate(batch["text"]) if text is not None]
+        labeled = [
+            index for index, text in enumerate(batch["text"]) if text is not None
+        ]
         self._labeled_count += len(labeled)
         if metrics is not None and labeled:
             for metric in self.metrics["inference"]:
-                value = metric(
+                ___errors, count = metric(
                     log_probs=batch["log_probs"][labeled],
                     log_probs_length=batch["log_probs_length"][labeled],
                     text=[batch["text"][index] for index in labeled],
                 )
-                metrics.update(metric.name, value, n=len(labeled))
+                metrics.update(metric.name, ___errors, count, True)
         return batch
 
     def _inference_part(self, part, dataloader):
@@ -267,7 +277,9 @@ class ASRInferencer(Inferencer):
         if self.save_path is not None:
             (self.save_path / part).mkdir(exist_ok=True, parents=True)
 
-        for batch_idx, batch in tqdm(enumerate(dataloader), desc=part, total=len(dataloader)):
+        for batch_idx, batch in tqdm(
+            enumerate(dataloader), desc=part, total=len(dataloader)
+        ):
             self.process_batch(batch_idx, batch, self.evaluation_metrics, part)
 
         logs = {"predictions": len(self._seen_ids), "labeled": self._labeled_count}

@@ -1,6 +1,6 @@
 from src.metrics.base_metric import BaseMetric
 from src.text_encoder.ctc_beam_search import CTCPrefixBeamSearch
-# (  ; ω ; )(  ; ω ; )(  ; ω ; )
+
 
 class BeamMetric(BaseMetric):
     def __init__(self, text_encoder, metric_fn, name=None, beam_size=16):
@@ -11,8 +11,11 @@ class BeamMetric(BaseMetric):
 
     def __call__(self, log_probs, log_probs_length, text, **kwargs):
         predictions = self.decoder.decode_batch(log_probs, log_probs_length)
-        values = []
+        total_count = 0
+        total_errors = 0
         for target, prediction in zip(text, predictions):
             target = self.text_encoder.normalize_text(target)
-            values.append(self.metric_fn(target, prediction))
-        return sum(values) / len(values)
+            ____errors, count = self.metric_fn(target, prediction)
+            total_errors += ____errors
+            total_count += count
+        return total_errors, total_count

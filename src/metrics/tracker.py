@@ -26,7 +26,7 @@ class MetricTracker:
         for col in self._data.columns:
             self._data[col].values[:] = 0
 
-    def update(self, key, value, n=1):
+    def update(self, key, value, n=1, is_sum=False):
         """
         Update metrics DataFrame with new value.
 
@@ -37,9 +37,18 @@ class MetricTracker:
         """
         # if self.writer is not None:
         #     self.writer.add_scalar(key, value)
-        self._data.loc[key, "total"] += value * n
-        self._data.loc[key, "counts"] += n
-        self._data.loc[key, "average"] = self._data.total[key] / self._data.counts[key]
+        if is_sum:
+            self._data.loc[key, "total"] += value
+            self._data.loc[key, "counts"] += n
+            self._data.loc[key, "average"] = self._data.total[key] / max(
+                self._data.counts[key], 1
+            )
+        else:
+            self._data.loc[key, "total"] += value * n
+            self._data.loc[key, "counts"] += n
+            self._data.loc[key, "average"] = self._data.total[key] / max(
+                self._data.counts[key], 1
+            )
 
     def avg(self, key):
         """
