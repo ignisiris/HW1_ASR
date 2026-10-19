@@ -2,6 +2,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import torch
 
 
 class CometMLWriter:
@@ -40,7 +41,8 @@ class CometMLWriter:
         try:
             import comet_ml
 
-            comet_ml.login()
+            if mode != "offline":
+                comet_ml.login()
 
             self.run_id = run_id
 
@@ -177,8 +179,19 @@ class CometMLWriter:
                 in the CometML-friendly format.
         """
         self.exp.log_image(
-            image_data=image, name=self._object_name(image_name), step=self.step
+            image_data=self._prepare_image(image),
+            name=self._object_name(image_name),
+            step=self.step,
         )
+
+    @staticmethod
+    def _prepare_image(image):
+        if isinstance(image, torch.Tensor):
+            image = image.detach().cpu()
+            if image.ndim == 3:
+                image = image.permute(1, 2, 0)
+            image = image.numpy()
+        return image
 
     def add_audio(self, audio_name, audio, sample_rate=None):
         """
