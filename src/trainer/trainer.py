@@ -48,6 +48,8 @@ class Trainer(BaseTrainer):
 
         if self.is_train:
             batch["loss"].backward()  # sum of all losses is always called loss
+            metrics.update("grad_norm", self._get_grad_norm())
+
             self._clip_grad_norm()
             self.optimizer.step()
             if self.lr_scheduler is not None:
