@@ -1,3 +1,37 @@
+# реализация HW1 ASR
+
+Установка из корня проекта:
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+Скачивание весов финальной модели exp_107, языковой модели и логов:
+
+```bash
+python download_resources.py
+```
+
+Распознавание моделью:
+
+```bash
+python inference.py -cn 'experiments/inference_exp107_lm' datasets.custom.data_dir=/путькдатасету inferencer.save_path=/путькпредсказаниям
+```
+
+Расчёт CER/WER при наличии эталонных транскрипций:
+
+```bash
+python calc_metrics.py /путькдатасету/transcriptions /путькпредсказаниям/custom
+```
+
+Демо: [ноутбук](demo/final_inference.ipynb) · [открыть в Colab](https://colab.research.google.com/github/ignisiris/HW1_ASR/blob/main/demo/final_inference.ipynb).
+
+Comet Report: [отчёт по экспериментам](https://www.comet.com/ignisiris/hw1-asr/reports/71S7pEjLTUOklgNjDEOzr4GrQ)
+
+---
+
 # Automatic Speech Recognition (ASR) with PyTorch
 
 <p align="center">
@@ -77,3 +111,6 @@ This repository is based on a [PyTorch Project Template](https://github.com/Blin
 ## License
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](/LICENSE)
+
+Примеры аудио в `demo/sample`: LibriSpeech dev-clean и dev-other,
+[OpenSLR 12](https://www.openslr.org/12/), лицензия [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
