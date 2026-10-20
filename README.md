@@ -28,7 +28,7 @@ python calc_metrics.py /путькдатасету/transcriptions /путькп�
 
 Демо: [ноутбук](demo/final_inference.ipynb) · [открыть в Colab](https://colab.research.google.com/github/ignisiris/HW1_ASR/blob/main/demo/final_inference.ipynb).
 
-Comet Report: [отчёт по экспериментам](https://www.comet.com/ignisiris/hw1-asr/reports/71S7pEjLTUOklgNjDEOzr4GrQ)
+Comet Report: [отчёт по экспериментам](https://www.comet.com/ignisiris/hw1-asr/reports/Yhd9CbrdnAos1WuiOg6A1ZBrc)
 
 ---
 
