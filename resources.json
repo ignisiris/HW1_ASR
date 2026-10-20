@@ -1,0 +1,16 @@
+{
+  "files": [
+    {
+      "path": "saved/exp107/model_best.pth",
+      "url": "https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key=https%3A%2F%2Fdisk.360.yandex.ru%2Fd%2Fa6Lf0yfQ-S6gpw&path=%2Fmodel_best.pth"
+    },
+    {
+      "path": "saved/exp107/word_lm_train_all.pkl",
+      "url": "https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key=https%3A%2F%2Fdisk.360.yandex.ru%2Fd%2Fa6Lf0yfQ-S6gpw&path=%2Fword_lm_train_all.pkl"
+    },
+    {
+      "path": "saved/exp107/training_logs_and_evaluation.zip",
+      "url": "https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key=https%3A%2F%2Fdisk.360.yandex.ru%2Fd%2Fa6Lf0yfQ-S6gpw&path=%2Ftraining_logs_and_evaluation.zip"
+    }
+  ]
+}
