@@ -5,16 +5,22 @@ from pathlib import Path
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
-from src.utils.io_utils import ROOT_PATH
 import gdown
+
+from src.utils.io_utils import ROOT_PATH
 
 
 def download(url, output):
+    if urlparse(url).hostname == "cloud-api.yandex.net":
+        with urlopen(url, timeout=120) as response:
+            url = json.load(response)["href"]
     if urlparse(url).hostname == "drive.google.com":
         if gdown.download(url, str(output), fuzzy=True, quiet=False) is None:
             raise RuntimeError("Download failed.")
     else:
-        with urlopen(url, timeout=120) as source, Path(output).open("wb") as destination:
+        with urlopen(url, timeout=120) as source, Path(output).open(
+            "wb"
+        ) as destination:
             shutil.copyfileobj(source, destination)
 
 
