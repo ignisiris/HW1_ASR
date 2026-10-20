@@ -1,3 +1,4 @@
+import random
 from pathlib import Path
 
 import pandas as pd
@@ -63,6 +64,7 @@ class Trainer(BaseTrainer):
             ___errors, count = met(**batch)
             metrics.update(met.name, ___errors, count, is_sum=True)
         return batch
+
     def log_audio(self, audio, audio_length, sample_rate=16000, **batch):
         length = int(audio_length[0])
         audio_for_log = audio[0, :, :length].detach().cpu()
@@ -107,14 +109,19 @@ class Trainer(BaseTrainer):
         argmax_inds = log_probs.cpu().argmax(-1).numpy()
         argmax_inds = [
             inds[: int(ind_len)]
-            for inds, ind_len in zip(argmax_inds, log_probs_length.numpy())
+            for inds, ind_len in zip(
+                argmax_inds, log_probs_length.detach().cpu().numpy()
+            )
         ]
         argmax_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
         argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
         tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path))
 
         rows = {}
-        for pred, target, raw_pred, audio_path in tuples[:examples_to_log]:
+        rng = random.Random(self.config.trainer.seed + self.writer.step)
+        for pred, target, raw_pred, audio_path in rng.sample(
+            tuples, min(examples_to_log, len(tuples))
+        ):
             target = self.text_encoder.normalize_text(target)
             word_errors, words = calc_wer(target, pred)
             char_errors, chars = calc_cer(target, pred)
